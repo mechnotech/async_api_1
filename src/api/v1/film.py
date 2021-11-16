@@ -11,6 +11,12 @@ router = APIRouter()
 class Film(BaseModel):
     id: str
     title: str
+    imdb_rating: float
+    description: str
+    genre: str
+    actors: list
+    writers: list
+    directors: str
 
 
 # Внедряем FilmService с помощью Depends(get_film_service)
@@ -29,4 +35,13 @@ async def film_details(film_id: str, film_service: FilmService = Depends(get_fil
     # Если бы использовалась общая модель для бизнес-логики и формирования ответов API
     # вы бы предоставляли клиентам данные, которые им не нужны
     # и, возможно, данные, которые опасно возвращать
-    return Film(id=film.id, title=film.title)
+    return Film(
+        id=film.id,
+        title=film.title,
+        imdb_rating=film.imdb_rating,
+        description=film.description,
+        genre=film.genre,
+        actors=film.actors,
+        writers=film.writers,
+        directors=film.director,
+        )
