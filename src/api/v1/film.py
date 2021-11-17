@@ -14,10 +14,10 @@ class Film(BaseModel):
     title: str
     imdb_rating: float
     description: str
-    genre: str
+    genre: list
     actors: list
     writers: list
-    directors: str
+    directors: list
 
 
 @router.get("/")
@@ -62,5 +62,5 @@ async def film_details(film_id: str, film_service: FilmService = Depends(get_fil
         genre=film.genre,
         actors=film.actors,
         writers=film.writers,
-        directors=film.director,
+        directors=film.directors,
         )

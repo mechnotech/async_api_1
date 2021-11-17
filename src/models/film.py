@@ -14,10 +14,10 @@ class Film(BaseModel):
     title: str
     imdb_rating: float
     description: str
-    genre: str
+    genre: list
     actors: list
     writers: list
-    director: str
+    directors: list
 
     class Config:
         # Заменяем стандартную работу с json на более быструю
