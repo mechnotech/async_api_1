@@ -1,8 +1,9 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
+from models.film import FilmToList
 from services.film import FilmService, get_film_service
 
 router = APIRouter()
@@ -11,6 +12,30 @@ router = APIRouter()
 class Film(BaseModel):
     id: str
     title: str
+    imdb_rating: float
+    description: str
+    genre: str
+    actors: list
+    writers: list
+    directors: str
+
+
+@router.get("/")
+async def films_list(sort: str, request: Request, film_service: FilmService = Depends(get_film_service)):
+    film_list = await film_service.get_block(dict(request.query_params))
+    if not film_list:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='films not found')
+    result = [FilmToList(id=x.id, title=x.title, imdb_rating=x.imdb_rating) for x in film_list]
+    return result
+
+
+@router.get("/search")
+async def search_films(request: Request, film_service: FilmService = Depends(get_film_service)):
+    film_list = await film_service.get_block(dict(request.query_params))
+    if not film_list:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='films not found')
+    result = [FilmToList(id=x.id, title=x.title, imdb_rating=x.imdb_rating) for x in film_list]
+    return result
 
 
 # Внедряем FilmService с помощью Depends(get_film_service)
@@ -29,4 +54,13 @@ async def film_details(film_id: str, film_service: FilmService = Depends(get_fil
     # Если бы использовалась общая модель для бизнес-логики и формирования ответов API
     # вы бы предоставляли клиентам данные, которые им не нужны
     # и, возможно, данные, которые опасно возвращать
-    return Film(id=film.id, title=film.title)
+    return Film(
+        id=film.id,
+        title=film.title,
+        imdb_rating=film.imdb_rating,
+        description=film.description,
+        genre=film.genre,
+        actors=film.actors,
+        writers=film.writers,
+        directors=film.director,
+        )
