@@ -15,7 +15,16 @@ class Film(BaseModel):
 
 
 @router.get("/")
-async def read_item(sort: str, request: Request, film_service: FilmService = Depends(get_film_service)):
+async def films_list(sort: str, request: Request, film_service: FilmService = Depends(get_film_service)):
+    film_list = await film_service.get_block(dict(request.query_params))
+    if not film_list:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='films not found')
+    result = [FilmToList(id=x.id, title=x.title, imdb_rating=x.imdb_rating) for x in film_list]
+    return result
+
+
+@router.get("/search")
+async def search_films(request: Request, film_service: FilmService = Depends(get_film_service)):
     film_list = await film_service.get_block(dict(request.query_params))
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='films not found')

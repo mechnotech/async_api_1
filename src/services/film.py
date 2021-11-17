@@ -10,38 +10,9 @@ from fastapi import Depends
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import Film, FilmToList
+from .utils import create_es_search_params
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
-
-
-def create_es_search_params(params: dict) -> dict:
-    page_sz = 20
-    page_num = 0
-    sort = 'imdb_rating'
-
-    if params['sort'][0] == '-':
-        order = 'desc'
-    else:
-        order = 'asc'
-
-    if params.get('page[size]'):
-        page_sz = params.get('page[size]')
-    if params.get('page[number]'):
-        page_num = params.get('page[number]')
-
-    template = {
-        "from": page_num,
-        "size": page_sz,
-        "sort": [
-            {
-                sort: {
-                    "order": order
-                }
-            }
-        ]
-    }
-
-    return template
 
 
 def clean_film_list(films_list: list) -> list:
