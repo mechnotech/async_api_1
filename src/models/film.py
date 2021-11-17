@@ -12,7 +12,12 @@ def orjson_dumps(v, *, default):
 class Film(BaseModel):
     id: str
     title: str
+    imdb_rating: float
     description: str
+    genre: str
+    actors: list
+    writers: list
+    director: str
 
     class Config:
         # Заменяем стандартную работу с json на более быструю
