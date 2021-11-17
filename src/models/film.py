@@ -18,3 +18,14 @@ class Film(BaseModel):
         # Заменяем стандартную работу с json на более быструю
         json_loads = orjson.loads
         json_dumps = orjson_dumps
+
+
+class FilmToList(BaseModel):
+    id: str
+    title: str
+    imdb_rating: float
+
+    class Config:
+        # Заменяем стандартную работу с json на более быструю
+        json_loads = orjson.loads
+        json_dumps = orjson_dumps

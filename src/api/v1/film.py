@@ -3,6 +3,7 @@ from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
+from models.film import FilmToList
 from services.film import FilmService, get_film_service
 
 router = APIRouter()
@@ -13,13 +14,13 @@ class Film(BaseModel):
     title: str
 
 
-fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
-
-
 @router.get("/")
 async def read_item(sort: str, request: Request, film_service: FilmService = Depends(get_film_service)):
     film_list = await film_service.get_block(dict(request.query_params))
-    return film_list
+    if not film_list:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='films not found')
+    result = [FilmToList(id=x.id, title=x.title, imdb_rating=x.imdb_rating) for x in film_list]
+    return result
 
 
 # Внедряем FilmService с помощью Depends(get_film_service)
