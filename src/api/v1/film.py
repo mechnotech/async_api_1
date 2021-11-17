@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
 from services.film import FilmService, get_film_service
@@ -11,6 +11,15 @@ router = APIRouter()
 class Film(BaseModel):
     id: str
     title: str
+
+
+fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
+
+
+@router.get("/")
+async def read_item(sort: str, request: Request, film_service: FilmService = Depends(get_film_service)):
+    film_list = await film_service.get_block(dict(request.query_params))
+    return film_list
 
 
 # Внедряем FilmService с помощью Depends(get_film_service)
