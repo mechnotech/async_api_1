@@ -1,6 +1,9 @@
+from typing import Optional
+
 import orjson
 
 from pydantic import BaseModel
+
 
 def orjson_dumps(v, *, default):
     return orjson.dumps(v, default=default).decode()
@@ -9,7 +12,7 @@ def orjson_dumps(v, *, default):
 class Genre(BaseModel):
     id: str
     name: str
-    description: str
+    description: Optional[str]
 
     class Config:
         json_loads = orjson.loads
