@@ -1,23 +1,11 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel
 
-from models.film import FilmToList
+from models.film import FilmToList, Film
 from services.film import FilmService, get_film_service
 
 router = APIRouter()
-
-
-class Film(BaseModel):
-    id: str
-    title: str
-    imdb_rating: float
-    description: str
-    genre: list
-    actors: list
-    writers: list
-    directors: list
 
 
 @router.get("/")
