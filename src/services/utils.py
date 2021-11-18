@@ -1,3 +1,8 @@
+from http import HTTPStatus
+
+from fastapi import HTTPException
+
+
 def create_es_search_params(params: dict) -> dict:
     page_sz = 20
     page_num = 0
@@ -11,11 +16,13 @@ def create_es_search_params(params: dict) -> dict:
             order = 'desc'
         else:
             order = 'asc'
+    try:
+        page_sz = int(params.get('page[size]'))
+        page_num = int(params.get('page[number]'))
+        page_num += 1 * page_sz
+    except Exception:
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail='wrong params page[size], page[number]')
 
-    if params.get('page[size]'):
-        page_sz = params.get('page[size]')
-    if params.get('page[number]'):
-        page_num = params.get('page[number]')
     if params.get('filter[genre]'):
         genre_id = params.get('filter[genre]')
     if params.get('query'):
