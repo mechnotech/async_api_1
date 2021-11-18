@@ -19,7 +19,8 @@ def create_es_search_params(params: dict) -> dict:
         try:
             page_sz = int(params.get('page[size]'))
             page_num = int(params.get('page[number]'))
-            page_num += 1*page_sz
+            if page_num > 1:
+                page_num = page_num * page_sz
         except Exception:
             raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail='page[number], page[size] must be int')
 
@@ -40,7 +41,7 @@ def create_es_search_params(params: dict) -> dict:
                 "query": {
                     "bool": {
                         "must": [
-                            {"match": {"genre.uuid": genre_id}}
+                            {"match_phrase": {"genre.uuid": genre_id}}
 
                         ]
                     }

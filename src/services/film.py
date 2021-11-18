@@ -28,9 +28,11 @@ class FilmService:
         self.elastic = elastic
 
     async def get_block(self, params: dict) -> Optional[List[Film]]:
+        key = params.copy()
+        key['key'] = 'films_list'
         params = create_es_search_params(params)
 
-        films_list = await self._film_list_from_cache(params)
+        films_list = await self._film_list_from_cache(key)
 
         if not films_list:
             try:
@@ -38,7 +40,7 @@ class FilmService:
             except Exception:
                 return None
 
-        await self._put_film_list_raw_to_cache(films=films_list, params=params)
+        await self._put_film_list_raw_to_cache(films=films_list, params=key)
 
         return clean_film_list(films_list)
 
