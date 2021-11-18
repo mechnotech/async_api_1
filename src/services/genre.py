@@ -10,16 +10,16 @@ from fastapi import Depends
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.genre import Genre
-from .utils import create_es_search_params
+from services.utils import create_es_search_params
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
 
 
-# def clean_film_list(films_list: list) -> list:
-#     cleaned_data = []
-#     for film in films_list:
-#         cleaned_data.append(FilmToList(**film['_source']))
-#     return cleaned_data
+def clean_film_list(genre_list: list) -> list:
+    cleaned_data = []
+    for genre in genre_list:
+        cleaned_data.append(Genre(**genre['_source']))
+    return cleaned_data
 
 
 class GenreService:
@@ -27,25 +27,26 @@ class GenreService:
         self.redis = redis
         self.elastic = elastic
 
-    # async def get_block(self, params: dict) -> Optional[List[Film]]:
-    #     params = create_es_search_params(params)
-    #
-    #     films_list = await self._film_list_from_cache(params)
-    #
-    #     if not films_list:
-    #         try:
-    #             films_list = await self._get_film_list_from_es(params)
-    #         except Exception:
-    #             return None
-    #
-    #     await self._put_film_list_raw_to_cache(films=films_list, params=params)
-    #
-    #     return clean_film_list(films_list)
+    async def get_block(self, params: dict) -> Optional[List[Genre]]:
+        key = params.copy()
+        key['key'] = 'genres_list'
+        params = create_es_search_params(params)
+        params.pop('sort')
+        genre_list = await self._genre_list_from_cache(key)
 
+        if not genre_list:
+            try:
+                genre_list = await self._get_genre_list_from_es(params)
+            except Exception:
+                return None
+
+        await self._put_genre_list_raw_to_cache(genres=genre_list, params=key)
+
+        return clean_film_list(genre_list)
 
     async def get_by_id(self, genre_id: str) -> Optional[Genre]:
 
-        genre = await self._film_from_cache(genre_id)
+        genre = await self._genre_from_cache(genre_id)
         if not genre:
 
             try:
@@ -65,7 +66,7 @@ class GenreService:
         doc = await self.elastic.search(index='genres', body=params)
         return doc['hits']['hits']
 
-    async def _film_from_cache(self, genre_id: str) -> Optional[Genre]:
+    async def _genre_from_cache(self, genre_id: str) -> Optional[Genre]:
         data = await self.redis.get(genre_id)
         if not data:
             return None
@@ -73,21 +74,17 @@ class GenreService:
         genre = Genre.parse_raw(data)
         return genre
 
-    # async def _film_list_from_cache(self, params: dict) -> Optional[list]:
-    #     data = await self.redis.get(str(params))
-    #     if not data:
-    #         return None
-    #     return json.loads(data.decode())
+    async def _genre_list_from_cache(self, params: dict) -> Optional[list]:
+        data = await self.redis.get(str(params))
+        if not data:
+            return None
+        return json.loads(data.decode())
 
     async def _put_genre_to_cache(self, genre: Genre):
-        # Сохраняем данные о фильме, используя команду set
-        # Выставляем время жизни кеша — 5 минут
-        # https://redis.io/commands/set
-        # pydantic позволяет сериализовать модель в json
         await self.redis.set(genre.id, genre.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
-    # async def _put_film_list_raw_to_cache(self, films: list, params: dict):
-    #     await self.redis.set(key=str(params), value=json.dumps(films), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
+    async def _put_genre_list_raw_to_cache(self, genres: list, params: dict):
+        await self.redis.set(key=str(params), value=json.dumps(genres), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
 
 @lru_cache()
