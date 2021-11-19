@@ -1,6 +1,6 @@
 ### Redis template
 # Ignore redis binary dump (dump.rdb) files
-
+*.env
 *.rdb
 
 ### Python template
@@ -111,7 +111,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+src/.async.env
 .venv
 env/
 venv/
