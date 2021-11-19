@@ -6,17 +6,17 @@ from fastapi import Depends
 
 from db.elastic import get_elastic
 from db.redis import get_redis
-from models.film import Film, FilmShort
+from models.person import Person, PersonShort
 from .common import CommonService
 
 
-class FilmService(CommonService):
+class PersonService(CommonService):
     pass
 
 
 @lru_cache()
-def get_film_service(
+def get_person_service(
         redis: Redis = Depends(get_redis),
         elastic: AsyncElasticsearch = Depends(get_elastic),
-) -> FilmService:
-    return FilmService(redis, elastic, short_obj=FilmShort, obj=Film, key='movies')
+) -> PersonService:
+    return PersonService(redis, elastic, short_obj=PersonShort, obj=Person, key='persons')
