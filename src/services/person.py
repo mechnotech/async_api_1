@@ -7,12 +7,11 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
+from core.config import FILM_CACHE_EXPIRE_IN_SECONDS
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.person import Person
-from services.utils import create_es_search_params
-
-FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
+from .utils import create_es_search_params
 
 
 def clean_film_list(person_list: list) -> list:
@@ -78,7 +77,7 @@ class PersonService:
         data = await self.redis.get(str(params))
         if not data:
             return None
-        return json.loads(data.decode())
+        return json.loads(data.decode('utf-8'))
 
     async def _put_person_to_cache(self, person: Person):
         await self.redis.set(person.id, person.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)

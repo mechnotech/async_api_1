@@ -1,4 +1,5 @@
 import json
+from collections import OrderedDict
 from functools import lru_cache
 from typing import Optional, List
 
@@ -7,19 +8,11 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
+from core.config import FILM_CACHE_EXPIRE_IN_SECONDS
 from db.elastic import get_elastic
 from db.redis import get_redis
-from models.film import Film, FilmToList
+from models.film import Film, FilmShort
 from .utils import create_es_search_params
-
-FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
-
-
-def clean_film_list(films_list: list) -> list:
-    cleaned_data = []
-    for film in films_list:
-        cleaned_data.append(FilmToList(**film['_source']))
-    return cleaned_data
 
 
 class FilmService:
@@ -27,35 +20,34 @@ class FilmService:
         self.redis = redis
         self.elastic = elastic
 
-    async def get_block(self, params: dict) -> Optional[List[Film]]:
+    async def get_block(self, params: dict, count_only=False) -> Optional[List[FilmShort]]:
         key = params.copy()
         key['key'] = 'films_list'
+        key = OrderedDict(sorted(key.items()))
         params = create_es_search_params(params)
 
-        films_list = await self._film_list_from_cache(key)
+        films = await self._film_list_from_cache(key)
 
-        if not films_list:
+        if not films:
             try:
-                films_list = await self._get_film_list_from_es(params)
+                films = await self._get_film_list_from_es(params)
             except Exception:
                 return None
 
-        await self._put_film_list_raw_to_cache(films=films_list, params=key)
+        await self._put_film_list_raw_to_cache(films=films, params=key)
 
-        return clean_film_list(films_list)
+        if count_only:
+            return films['total']['value']
+        return [FilmShort(**x['_source']) for x in films['hits']]
 
-    # get_by_id возвращает объект фильма. Он опционален, так как фильм может отсутствовать в базе
     async def get_by_id(self, film_id: str) -> Optional[Film]:
-        # Пытаемся получить данные из кеша, потому что оно работает быстрее
         film = await self._film_from_cache(film_id)
         if not film:
-            # Если фильма нет в кеше, то ищем его в Elasticsearch
             try:
                 film = await self._get_film_from_elastic(film_id)
             except elasticsearch.exceptions.NotFoundError:
                 return None
 
-        # Сохраняем/обновляем фильм в кешe
         await self._put_film_to_cache(film)
 
         return film
@@ -66,16 +58,13 @@ class FilmService:
 
     async def _get_film_list_from_es(self, params: dict) -> Optional[list]:
         doc = await self.elastic.search(index='movies', body=params)
-        return doc['hits']['hits']
+        return doc['hits']
 
     async def _film_from_cache(self, film_id: str) -> Optional[Film]:
-        # Пытаемся получить данные о фильме из кеша, используя команду get
-        # https://redis.io/commands/get
         data = await self.redis.get(film_id)
         if not data:
             return None
 
-        # pydantic предоставляет удобное API для создания объекта моделей из json
         film = Film.parse_raw(data)
         return film
 
@@ -83,16 +72,16 @@ class FilmService:
         data = await self.redis.get(str(params))
         if not data:
             return None
-        return json.loads(data.decode())
+        return json.loads(data.decode('utf-8'))
 
     async def _put_film_to_cache(self, film: Film):
-        # Сохраняем данные о фильме, используя команду set
-        # Выставляем время жизни кеша — 5 минут
-        # https://redis.io/commands/set
-        # pydantic позволяет сериализовать модель в json
+        if await self.redis.exists(film.id):
+            await self.redis.expire(film, FILM_CACHE_EXPIRE_IN_SECONDS)
         await self.redis.set(film.id, film.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
     async def _put_film_list_raw_to_cache(self, films: list, params: dict):
+        if await self.redis.exists(str(params)):
+            await self.redis.expire(str(params), FILM_CACHE_EXPIRE_IN_SECONDS)
         await self.redis.set(key=str(params), value=json.dumps(films), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
 

@@ -8,8 +8,10 @@ def create_es_search_params(params: dict) -> dict:
     page_num = 0
     sort = 'imdb_rating'
     order = 'desc'
-    genre_id = None
+    filter_id = None
+    filter_path = None
     query = None
+    query_fields = ['title,', 'description']
 
     if params.get('sort'):
         if not params['sort'][0] == '-':
@@ -25,30 +27,39 @@ def create_es_search_params(params: dict) -> dict:
             raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail='page[number], page[size] must be int')
 
     if params.get('filter[genre]'):
-        genre_id = params.get('filter[genre]')
+        filter_id = params.get('filter[genre]')
+        filter_path = 'genre'
+    if params.get('filter[person]'):
+        filter_id = params.get('filter[person]')
+    if params.get('filter[path]'):
+        filter_path = params.get('filter[path]')
     if params.get('query'):
         query = params.get('query')
+    if params.get('fields'):
+        if isinstance(params.get('fields'), list):
+            query_fields = params.get('fields')
+        else:
+            query_fields = [params.get('fields')]
 
     search_query = {
         "query_string": {
-            "fields": ["description", "title"],
+            "fields": query_fields,
             "query": f"{query}~"
         }
     }
-    filter_genres = {
-            "nested": {
-                "path": "genre",
-                "query": {
-                    "bool": {
-                        "must": [
-                            {"match_phrase": {"genre.uuid": genre_id}}
+    temp_filter = {
+        "nested": {
+            "path": filter_path,
+            "query": {
+                "bool": {
+                    "must": [
+                        {"match_phrase": {f"{filter_path}.uuid": filter_id}}
 
-                        ]
-                    }
-                },
-                "score_mode": "avg"
+                    ]
+                }
             }
         }
+    }
 
     template = {
         "from": page_num,
@@ -63,8 +74,8 @@ def create_es_search_params(params: dict) -> dict:
     ]
     if sort:
         template['sort'] = temp_sort
-    if genre_id:
-        template['query'] = filter_genres
+    if filter_id:
+        template['query'] = temp_filter
     if query:
         template['query'] = search_query
 

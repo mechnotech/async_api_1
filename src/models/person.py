@@ -10,7 +10,7 @@ def orjson_dumps(v, *, default):
     return orjson.dumps(v, default=default).decode()
 
 
-class Person(BaseModel):
+class PersonShort(BaseModel):
     id: str
     full_name: str
     birthday: Optional[datetime.date]
@@ -18,3 +18,7 @@ class Person(BaseModel):
     class Config:
         json_loads = orjson.loads
         json_dumps = orjson_dumps
+
+
+class Person(PersonShort):
+    role: Optional[dict]
