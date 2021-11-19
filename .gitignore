@@ -1,6 +1,6 @@
 ### Redis template
 # Ignore redis binary dump (dump.rdb) files
-
+*.env
 *.rdb
 
 ### Python template
