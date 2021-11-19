@@ -6,7 +6,8 @@
 ```
 docker-compose up -d
 ```
-API будет доступно по адресу http://0.0.0.0:8000 
+API будет доступно по адресу http://0.0.0.0:8000
+
 5) Для локальной работы сделан dev-compose.yaml. Он запускает Redis, ES, Kibana, доступные на localhost
 
 
