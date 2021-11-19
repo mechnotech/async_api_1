@@ -32,8 +32,13 @@ async def person_films(
 
     query_params = dict(request.query_params)
     query_params['filter[person]'] = person.id
-    query_params['filter[path]'] = 'directors'
-    film_list = await film_service.get_block(query_params)
+    roles = ['actors', 'writers', 'directors']
+    film_list = []
+    for role in roles:
+        query_params['filter[path]'] = role
+        films = await film_service.get_block(query_params)
+        if films:
+            film_list += films
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='films not found')
     result = [FilmShort(id=x.id, title=x.title, imdb_rating=x.imdb_rating) for x in film_list]
