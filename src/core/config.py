@@ -9,10 +9,10 @@ FILM_CACHE_EXPIRE_IN_SECONDS = os.getenv('REDIS_CASH_SECONDS', 360)
 
 PROJECT_NAME = os.getenv('PROJECT_NAME', 'movies')
 
-REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')
+REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
 REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
 
-ELASTIC_HOST = os.getenv('ELASTIC_HOST', '127.0.0.1')
+ELASTIC_HOST = os.getenv('ELASTIC_HOST', 'elasticsearch')
 ELASTIC_PORT = int(os.getenv('ELASTIC_PORT', 9200))
 
 # Корень проекта
