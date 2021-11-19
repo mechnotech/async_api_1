@@ -1,0 +1,53 @@
+version: "3.6"
+
+volumes:
+  redis_data:
+    name: redis_data
+  elastic_data:
+    name: elastic_data
+
+services:
+ elasticsearch:
+    image: elasticsearch:7.13.2
+    container_name: elasticsearch
+    restart: always
+    environment:
+     - discovery.type=single-node
+     - bootstrap.memory_lock=true
+     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+
+    volumes:
+     - elastic_data:/usr/share/elasticsearch/data
+    networks:
+     - elastic
+
+ kibana:
+    image: kibana:7.13.4
+    container_name: kibana_dev
+    env_file:
+     - src/.async.env
+    networks:
+     - elastic
+    ports:
+     - "5601:5601"
+    depends_on:
+     - elasticsearch
+
+ redis:
+    image: redis:6.2.6-bullseye
+    container_name: redis
+    restart: always
+    volumes:
+     - ./storage/redis/data:/data
+    ports:
+     - "6379:6379"
+    networks:
+     - elastic
+
+networks:
+  elastic:
+    driver: bridge
+
+
+
+
