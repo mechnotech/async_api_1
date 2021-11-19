@@ -21,8 +21,11 @@ def create_es_search_params(params: dict) -> dict:
         try:
             page_sz = int(params.get('page[size]'))
             page_num = int(params.get('page[number]'))
-            if page_num > 1:
-                page_num = page_num * page_sz
+            if page_num == 1:
+                page_num = 0
+            if page_num > 0:
+                page_num = page_num * page_sz - page_sz - 1
+
         except Exception:
             raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail='page[number], page[size] must be int')
 
