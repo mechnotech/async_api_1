@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
+from core.config import Messages
 from models.genre import Genre, GenreShort
 from services.film import FilmService, get_film_service
 from services.genre import GenreService, get_genre_service
@@ -17,7 +18,7 @@ async def genres_list(
 ):
     genre_list = await genre_service.get_block(dict(request.query_params))
     if not genre_list:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='genres not found')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=Messages.genres_not_found)
     result = [GenreShort(id=x.id, name=x.name, description=x.description) for x in genre_list]
     return result
 
@@ -30,7 +31,7 @@ async def genre_details(
 ) -> Genre:
     genre = await genre_service.get_by_id(genre_id)
     if not genre:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='genre not found')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=Messages.genres_not_found)
 
     query_params = dict()
     query_params['filter[genre]'] = genre.id

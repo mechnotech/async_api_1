@@ -15,7 +15,8 @@ services:
      - discovery.type=single-node
      - bootstrap.memory_lock=true
      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-
+    ports:
+      - "9200:9200"
     volumes:
      - elastic_data:/usr/share/elasticsearch/data
     networks:
@@ -24,8 +25,9 @@ services:
  kibana:
     image: kibana:7.13.4
     container_name: kibana_dev
-    env_file:
-     - src/.async.env
+    environment:
+      - discovery.type=single-node
+      - ELASTICSEARCH_URL=https://elasticsearch:9200
     networks:
      - elastic
     ports:

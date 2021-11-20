@@ -4,11 +4,13 @@ import aioredis
 import uvicorn as uvicorn
 from elasticsearch import AsyncElasticsearch
 from fastapi import FastAPI
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import ORJSONResponse
 
 from api.v1 import film, genre, person
 from core import config
 from core.logger import LOGGING
+from core.swager_scheme import custom_scheme
 from db import elastic
 from db import redis
 
@@ -22,7 +24,6 @@ app = FastAPI(
 
 @app.on_event('startup')
 async def startup():
-    print(config.REDIS_HOST, config.REDIS_PORT)
     redis.redis = await aioredis.create_redis_pool((config.REDIS_HOST, config.REDIS_PORT), minsize=10, maxsize=20)
     elastic.es = AsyncElasticsearch(hosts=[f'{config.ELASTIC_HOST}:{config.ELASTIC_PORT}'])
 
@@ -35,6 +36,23 @@ async def shutdown():
 app.include_router(film.router, prefix='/api/v1/film', tags=['film'])
 app.include_router(genre.router, prefix='/api/v1/genre', tags=['genre'])
 app.include_router(person.router, prefix='/api/v1/person', tags=['person'])
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="Movies API",
+        version="1.0.0",
+        description="Open cinema for all",
+        routes=app.routes,
+    )
+    openapi_schema['paths'] = custom_scheme
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
 
 if __name__ == '__main__':
     uvicorn.run(

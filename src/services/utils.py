@@ -2,6 +2,8 @@ from http import HTTPStatus
 
 from fastapi import HTTPException
 
+from core.config import Messages
+
 
 def create_es_search_params(params: dict) -> dict:
     page_sz = 20
@@ -27,7 +29,7 @@ def create_es_search_params(params: dict) -> dict:
                 page_num = page_num * page_sz - page_sz - 1
 
         except Exception:
-            raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail='page[number], page[size] must be int')
+            raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=Messages.bad_page_params)
 
     if params.get('filter[genre]'):
         filter_id = params.get('filter[genre]')

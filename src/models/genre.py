@@ -1,22 +1,12 @@
 from typing import Optional
 
-import orjson
-
-from pydantic import BaseModel
+from .common import AdvancedJsonModel
 
 
-def orjson_dumps(v, *, default):
-    return orjson.dumps(v, default=default).decode()
-
-
-class GenreShort(BaseModel):
+class GenreShort(AdvancedJsonModel):
     id: str
     name: str
     description: Optional[str]
-
-    class Config:
-        json_loads = orjson.loads
-        json_dumps = orjson_dumps
 
 
 class Genre(GenreShort):
