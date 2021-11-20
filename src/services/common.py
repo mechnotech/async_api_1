@@ -84,13 +84,7 @@ class CommonService:
         return json.loads(data.decode('utf-8'))
 
     async def _put_unit_to_cache(self, unit):
-        exists = await self.redis.exists(self.key + unit.id)
-        if exists:
-            await self.redis.expire(self.key + unit.id, FILM_CACHE_EXPIRE_IN_SECONDS)
         await self.redis.set(self.key + unit.id, unit.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
     async def _put_block_raw_to_cache(self, block: list, params: dict):
-        exists = await self.redis.exists(str(params))
-        if exists:
-            await self.redis.expire(str(params), FILM_CACHE_EXPIRE_IN_SECONDS)
         await self.redis.set(key=str(params), value=json.dumps(block), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
