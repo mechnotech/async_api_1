@@ -52,6 +52,8 @@ services:
       - elastic
     depends_on:
       - kibana
+    env_file:
+      - src/.async.env
 
 networks:
   elastic:
