@@ -4,7 +4,6 @@ from .common import AdvancedJsonModel
 
 
 class GenreShort(AdvancedJsonModel):
-    id: str
     name: str
     description: Optional[str]
 

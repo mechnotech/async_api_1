@@ -26,7 +26,7 @@ def create_es_search_params(params: dict) -> dict:
             if page_num == 1:
                 page_num = 0
             if page_num > 0:
-                page_num = page_num * page_sz - page_sz - 1
+                page_num = page_num * page_sz - page_sz
 
         except Exception:
             raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail=Messages.bad_page_params)

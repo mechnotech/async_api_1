@@ -8,6 +8,7 @@ def orjson_dumps(v, *, default):
 
 
 class AdvancedJsonModel(BaseModel):
+    id: str
 
     class Config:
         json_loads = orjson.loads

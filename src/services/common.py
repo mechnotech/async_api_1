@@ -3,27 +3,26 @@ from collections import OrderedDict
 from typing import Optional
 
 import elasticsearch.exceptions
-from aioredis import Redis
-from elasticsearch import AsyncElasticsearch
 
 from core.config import FILM_CACHE_EXPIRE_IN_SECONDS
+from .base import BaseCacheEngine, BaseSearchEngine
 from .utils import create_es_search_params
 
 
 class CommonService:
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch, short_obj, obj, key):
+    def __init__(self, cache_engine: BaseCacheEngine, search_engine: BaseSearchEngine, short_obj, obj, key):
         """
         Объединяющий класс для всех сущностей Film, Genre, Person, отвечает за запросы в ES и
         кэширование в Redis
-        :param redis:  Клиент Redis
-        :param elastic: Клиент ElasticSearch
+        :param cache_engine:  Движок кэширования (например Клиент Redis)
+        :param search_engine: Движок поиска (например Клиент ElasticSearch)
         :param short_obj: Сокращенная модель объекта запроса (Pydantic dataclass), например FilmShort
         :param obj: Развернутая модель объекта запроса (Pydantic dataclass)
         :param key: Индекс в ES, он же будет подмешиваться в ключ Redis для уникальности ключа
 
         """
-        self.redis = redis
-        self.elastic = elastic
+        self.cache_engine = cache_engine
+        self.search_engine = search_engine
         self.short_obj = short_obj
         self.obj = obj
         self.key = key
@@ -62,15 +61,15 @@ class CommonService:
         return unit
 
     async def _get_unit_from_elastic(self, unit_id: str) -> Optional[object]:
-        doc = await self.elastic.get(self.key, unit_id)
+        doc = await self.search_engine.get(self.key, unit_id)
         return self.obj(**doc['_source'])
 
     async def _get_block_from_es(self, params: dict) -> Optional[list]:
-        doc = await self.elastic.search(index=self.key, body=params)
+        doc = await self.search_engine.search(index=self.key, body=params)
         return doc['hits']
 
     async def _unit_from_cache(self, unit_id: str) -> Optional[object]:
-        data = await self.redis.get(self.key+unit_id)
+        data = await self.cache_engine.get(self.key+unit_id)
         if not data:
             return None
 
@@ -78,13 +77,13 @@ class CommonService:
         return unit
 
     async def _block_from_cache(self, params: dict) -> Optional[list]:
-        data = await self.redis.get(str(params))
+        data = await self.cache_engine.get(str(params))
         if not data:
             return None
         return json.loads(data.decode('utf-8'))
 
     async def _put_unit_to_cache(self, unit):
-        await self.redis.set(self.key + unit.id, unit.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache_engine.set(self.key + unit.id, unit.json(), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
     async def _put_block_raw_to_cache(self, block: list, params: dict):
-        await self.redis.set(key=str(params), value=json.dumps(block), expire=FILM_CACHE_EXPIRE_IN_SECONDS)
+        await self.cache_engine.set(key=str(params), value=json.dumps(block), expire=FILM_CACHE_EXPIRE_IN_SECONDS)

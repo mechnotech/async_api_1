@@ -5,7 +5,6 @@ from .common import AdvancedJsonModel
 
 
 class PersonShort(AdvancedJsonModel):
-    id: str
     full_name: str
     birthday: Optional[datetime.date]
 
