@@ -13,6 +13,7 @@ from core.logger import LOGGING
 from core.swager_scheme import custom_scheme
 from db import elastic
 from db import redis
+from utils.elastic_utils import apply_test_set
 
 app = FastAPI(
     title=config.PROJECT_NAME,
@@ -26,6 +27,7 @@ app = FastAPI(
 async def startup():
     redis.redis = await aioredis.create_redis_pool((config.REDIS_HOST, config.REDIS_PORT), minsize=10, maxsize=20)
     elastic.es = AsyncElasticsearch(hosts=[f'{config.ELASTIC_HOST}:{config.ELASTIC_PORT}'])
+    apply_test_set()
 
 
 @app.on_event('shutdown')
