@@ -15,7 +15,7 @@ REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
 ELASTIC_HOST = os.getenv('ELASTIC_HOST', '127.0.0.1')
 ELASTIC_PORT = int(os.getenv('ELASTIC_PORT', 9200))
 AUTH_API = os.getenv('AUTH_API', '127.0.0.1')
-AUTH_PORT = int(os.getenv('AUTH_PORT', 5000))
+AUTH_PORT = int(os.getenv('AUTH_PORT', 8500))
 ROLES_GET_ENDPOINT = os.getenv('ROLES_ENDPOINT', 'api/v1/users/me')
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

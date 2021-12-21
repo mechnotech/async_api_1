@@ -14,6 +14,8 @@ async def get_user_role(request) -> list:
     headers = {'Authorization': auth_token, "Accept": 'application/json'}
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(f'http://{AUTH_API}:{AUTH_PORT}/api/v1/users/me/') as r:
+            if r.status != 200:
+                return ['Anonymous', ]
             json_body = await r.json()
     msg = json_body.get('msg')
     if msg:
