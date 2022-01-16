@@ -11,17 +11,12 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 indexes_schemes = {
     'movies': 'movie_scheme_es.json',
     'genres': 'genre_scheme_es.json',
-    'persons': 'person_scheme_es.json'
+    'persons': 'person_scheme_es.json',
 }
-fixtures_files = {
-    'genres': 'genres_fixtures.txt',
-    'persons': 'persons_fixtures.txt',
-    'movies': 'movies_fixtures.txt'
-}
+fixtures_files = {'genres': 'genres_fixtures.txt', 'persons': 'persons_fixtures.txt', 'movies': 'movies_fixtures.txt'}
 
 
 class ESConnector:
-
     def __init__(self):
         self.connection = Elasticsearch(host=ELASTIC_HOST, port=ELASTIC_PORT)
         self.connection.cluster.health(wait_for_status='yellow', request_timeout=1)

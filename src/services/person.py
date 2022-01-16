@@ -15,13 +15,6 @@ class PersonService(CommonService):
 
 @lru_cache()
 def get_person_service(
-        redis: BaseCacheEngine = Depends(get_redis),
-        elastic: BaseSearchEngine = Depends(get_elastic),
+    redis: BaseCacheEngine = Depends(get_redis), elastic: BaseSearchEngine = Depends(get_elastic),
 ) -> PersonService:
-    return PersonService(
-        cache_engine=redis,
-        search_engine=elastic,
-        short_obj=PersonShort,
-        obj=Person,
-        key='persons'
-    )
+    return PersonService(cache_engine=redis, search_engine=elastic, short_obj=PersonShort, obj=Person, key='persons')

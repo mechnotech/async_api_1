@@ -15,13 +15,6 @@ class GenreService(CommonService):
 
 @lru_cache()
 def get_genre_service(
-        redis: BaseCacheEngine = Depends(get_redis),
-        elastic: BaseSearchEngine = Depends(get_elastic),
+    redis: BaseCacheEngine = Depends(get_redis), elastic: BaseSearchEngine = Depends(get_elastic),
 ) -> GenreService:
-    return GenreService(
-        cache_engine=redis,
-        search_engine=elastic,
-        short_obj=GenreShort,
-        obj=Genre,
-        key='genres'
-    )
+    return GenreService(cache_engine=redis, search_engine=elastic, short_obj=GenreShort, obj=Genre, key='genres')

@@ -46,37 +46,19 @@ def create_es_search_params(params: dict) -> dict:
         else:
             query_fields = [params.get('fields')]
 
-    search_query = {
-        "query_string": {
-            "fields": query_fields,
-            "query": f"{query}~"
-        }
-    }
+    search_query = {'query_string': {'fields': query_fields, 'query': f'{query}~'}}
     temp_filter = {
-        "nested": {
-            "path": filter_path,
-            "query": {
-                "bool": {
-                    "must": [
-                        {"match_phrase": {f"{filter_path}.uuid": filter_id}}
-
-                    ]
-                }
-            }
+        'nested': {
+            'path': filter_path,
+            'query': {'bool': {'must': [{'match_phrase': {f'{filter_path}.uuid': filter_id}}]}},
         }
     }
 
     template = {
-        "from": page_num,
-        "size": page_sz,
+        'from': page_num,
+        'size': page_sz,
     }
-    temp_sort = [
-        {
-            sort: {
-                "order": order
-            }
-        }
-    ]
+    temp_sort = [{sort: {'order': order}}]
     if sort:
         template['sort'] = temp_sort
     if filter_id:

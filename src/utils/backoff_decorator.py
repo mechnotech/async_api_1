@@ -3,12 +3,7 @@ import time
 from functools import wraps
 
 
-def backoff(
-        start_sleep_time=0.05,
-        factor=1.5,
-        border_sleep_time=5,
-        logy=logging
-):
+def backoff(start_sleep_time=0.05, factor=1.5, border_sleep_time=5, logy=logging):
     """
         Функция для повторного выполнения функции через некоторое время, если возникла ошибка.
          Использует наивный экспоненциальный рост времени повтора (factor)
@@ -25,7 +20,6 @@ def backoff(
     """
 
     def my_decorator(f):
-
         @wraps(f)
         def wrapper(*args, **kwargs):
             t = start_sleep_time

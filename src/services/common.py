@@ -69,7 +69,7 @@ class CommonService:
         return doc['hits']
 
     async def _unit_from_cache(self, unit_id: str) -> Optional[object]:
-        data = await self.cache_engine.get(self.key+unit_id)
+        data = await self.cache_engine.get(self.key + unit_id)
         if not data:
             return None
 

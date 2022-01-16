@@ -11,8 +11,8 @@ from services.film import FilmService, get_film_service
 router = APIRouter()
 
 
-@router.get("/")
-@router.get("/search")
+@router.get('/')
+@router.get('/search')
 async def films_list(request: Request, film_service: FilmService = Depends(get_film_service)):
     film_list = await film_service.get_block(dict(request.query_params))
     if not film_list:
@@ -25,9 +25,8 @@ async def films_list(request: Request, film_service: FilmService = Depends(get_f
 @router.get('/{film_id}')
 @privileged_only()
 async def film_details(
-        film_id: str,
-        authorization: Optional[str] = Header(None),
-        film_service: FilmService = Depends(get_film_service)) -> Film:
+    film_id: str, authorization: Optional[str] = Header(None), film_service: FilmService = Depends(get_film_service)
+) -> Film:
     film = await film_service.get_by_id(film_id)
     if not film:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=Messages.films_not_found)

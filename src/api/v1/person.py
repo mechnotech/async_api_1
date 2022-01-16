@@ -11,7 +11,7 @@ from services.person import PersonService, get_person_service
 router = APIRouter()
 
 
-@router.get("/")
+@router.get('/')
 async def persons_list(request: Request, person_service: PersonService = Depends(get_person_service)):
     person_list = await person_service.get_block(dict(request.query_params))
     if not person_list:
@@ -22,10 +22,10 @@ async def persons_list(request: Request, person_service: PersonService = Depends
 
 @router.get('/{person_id}/film/')
 async def person_films(
-        request: Request,
-        person_id: str,
-        film_service: FilmService = Depends(get_film_service),
-        person_service: PersonService = Depends(get_person_service)
+    request: Request,
+    person_id: str,
+    film_service: FilmService = Depends(get_film_service),
+    person_service: PersonService = Depends(get_person_service),
 ):
     person = await person_service.get_by_id(person_id)
     if not person:
@@ -48,10 +48,9 @@ async def person_films(
 
 @router.get('/{person_id}/', response_model=Person)
 async def person_details(
-        person_id: str,
-        person_service: PersonService = Depends(get_person_service),
-        film_service: FilmService = Depends(get_film_service),
-
+    person_id: str,
+    person_service: PersonService = Depends(get_person_service),
+    film_service: FilmService = Depends(get_film_service),
 ) -> Person:
     person_role = {'writer': [], 'actor': [], 'director': []}
     person = await person_service.get_by_id(person_id)
@@ -66,19 +65,11 @@ async def person_details(
         if film_list:
             person_role[role] = [x.id for x in film_list]
 
-    return Person(
-        id=person.id,
-        full_name=person.full_name,
-        birthday=person.birthday,
-        role=person_role
-    )
+    return Person(id=person.id, full_name=person.full_name, birthday=person.birthday, role=person_role)
 
 
-@router.get("/search")
-async def search_persons(
-        request: Request,
-        person_service: PersonService = Depends(get_person_service)
-):
+@router.get('/search')
+async def search_persons(request: Request, person_service: PersonService = Depends(get_person_service)):
     query_params = dict(request.query_params)
     query_params['fields'] = 'full_name'
     person_list = await person_service.get_block(query_params)

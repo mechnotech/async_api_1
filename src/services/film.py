@@ -15,13 +15,6 @@ class FilmService(CommonService):
 
 @lru_cache()
 def get_film_service(
-        redis: BaseCacheEngine = Depends(get_redis),
-        elastic: BaseSearchEngine = Depends(get_elastic),
+    redis: BaseCacheEngine = Depends(get_redis), elastic: BaseSearchEngine = Depends(get_elastic),
 ) -> FilmService:
-    return FilmService(
-        cache_engine=redis,
-        search_engine=elastic,
-        short_obj=FilmShort,
-        obj=Film,
-        key='movies'
-    )
+    return FilmService(cache_engine=redis, search_engine=elastic, short_obj=FilmShort, obj=Film, key='movies')
